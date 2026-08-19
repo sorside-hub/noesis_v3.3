@@ -5,6 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { KeySlotId } from './src/lib/ai/types';
 import { handleKeysOverview, handleSingleKeyCheck } from './src/api-core/keysHandler';
 import { handleDistil } from './src/api-core/distilHandler';
+import { handleAutoDetect, ExistingFolderInfo } from './src/api-core/autoDetectHandler';
 
 // Load environment variables from .env
 dotenv.config();
@@ -76,6 +77,47 @@ async function startServer() {
       res.json(result);
     } catch (error: unknown) {
       console.error('[API /api/distil Error]:', error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Internal Server Error',
+      });
+    }
+  });
+
+  // POST /api/auto-detect - AI Auto-Detect note metadata and folder placement
+  app.post('/api/auto-detect', async (req, res) => {
+    try {
+      const {
+        title,
+        content,
+        currentNoteType,
+        existingFolders,
+        customKeys,
+      } = req.body as {
+        title?: string;
+        content?: string;
+        currentNoteType?: string;
+        existingFolders?: ExistingFolderInfo[];
+        customKeys?: Partial<Record<KeySlotId, string>>;
+      };
+
+      if (!content && !title) {
+        return res.status(400).json({ error: 'content or title is required' });
+      }
+
+      const result = await handleAutoDetect(
+        {
+          title: title || '',
+          content: content || '',
+          currentNoteType,
+          existingFolders: existingFolders || [],
+          customKeys,
+        },
+        process.env
+      );
+
+      res.json(result);
+    } catch (error: unknown) {
+      console.error('[API /api/auto-detect Error]:', error);
       res.status(500).json({
         error: error instanceof Error ? error.message : 'Internal Server Error',
       });

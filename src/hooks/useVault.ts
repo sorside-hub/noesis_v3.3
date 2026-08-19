@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { VaultData, FileNode } from '../types/vault';
+import { VaultData, FileNode, NoteMetadata } from '../types/vault';
 import { loadVault, saveActiveTabId, saveOpenTabs, saveNode, deleteNodes } from '../lib/storage';
 import { getUniqueNodeName } from '../lib/vaultUtils';
 
@@ -108,7 +108,7 @@ export const useVault = () => {
 
   // -- File Operations --
 
-  const createNote = useCallback((parentId: string | null = null, name: string = 'Untitled') => {
+  const createNote = useCallback((parentId: string | null = null, name: string = 'Untitled', initialMetadata?: Partial<NoteMetadata>) => {
     const id = `note_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
 
     setVault((prev) => {
@@ -123,7 +123,8 @@ export const useVault = () => {
         content: '',
         metadata: {
           status: 'Idea',
-          includeInAiRag: false
+          includeInAiRag: false,
+          ...initialMetadata,
         },
         createdAt: Date.now(),
         updatedAt: Date.now(),

@@ -14,6 +14,7 @@ import { DistilTab } from './DistilTab';
 import { LinksTab } from './LinksTab';
 import { OutlineTab } from './OutlineTab';
 import { RightSidebarTabSwitcher } from './RightSidebarTabSwitcher';
+import { AutoDetectModal } from './AutoDetectModal';
 
 export type { RightSidebarTab };
 
@@ -24,6 +25,9 @@ interface RightSidebarProps {
   activeNode: FileNode | null;
   onSelectFile: (id: string) => void;
   onUpdateMetadata: (id: string, metadata: Partial<NoteMetadata>) => void;
+  updateNodeTitle?: (id: string, title: string) => void;
+  createFolder?: (parentId: string | null, name: string) => string | null;
+  moveNode?: (id: string, targetParentId: string | null) => void;
   onNavigateToHeading?: (lineIndex: number, text: string) => void;
 }
 
@@ -33,6 +37,9 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   activeNode,
   onSelectFile,
   onUpdateMetadata,
+  updateNodeTitle,
+  createFolder,
+  moveNode,
   onNavigateToHeading,
 }) => {
   const { isKeyboardOpen } = useVirtualKeyboard();
@@ -71,11 +78,21 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
     handleManualSync,
     handleToggleRag,
     toggleHeadingCollapse,
+    isAutoDetecting,
+    autoDetectError,
+    autoDetectResult,
+    isAutoDetectModalOpen,
+    setIsAutoDetectModalOpen,
+    handleRunAutoDetect,
+    handleApplyAutoDetect,
   } = useRightSidebarLogic({
     vault,
     activeNode,
     onSelectFile,
     onUpdateMetadata,
+    updateNodeTitle,
+    createFolder,
+    moveNode,
     onNavigateToHeading,
   });
 
@@ -118,12 +135,15 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
                 formattedCreated={formattedCreated}
                 formattedModified={formattedModified}
                 stats={stats}
+                isAutoDetecting={isAutoDetecting}
+                autoDetectError={autoDetectError}
                 handleTypeChange={handleTypeChange}
                 handleStatusChange={handleStatusChange}
                 handleTagsChange={handleTagsChange}
                 handleAliasesChange={handleAliasesChange}
                 handleToggleRag={handleToggleRag}
                 handleManualSync={handleManualSync}
+                handleRunAutoDetect={handleRunAutoDetect}
               />
             )}
 
@@ -185,6 +205,14 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
         tabMenuRef={tabMenuRef}
         isKeyboardOpen={isKeyboardOpen}
         tabs={tabs}
+      />
+
+      {/* AUTO-DETECT CONFIRMATION MODAL */}
+      <AutoDetectModal
+        isOpen={isAutoDetectModalOpen}
+        onClose={() => setIsAutoDetectModalOpen(false)}
+        result={autoDetectResult}
+        onApply={handleApplyAutoDetect}
       />
     </aside>
   );

@@ -23,25 +23,25 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onCreateNote, onQuickCap
       </p>
 
       {/* Action Hub */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-sm">
+      <div className="grid grid-cols-2 gap-2.5 w-full max-w-sm">
         {/* New Note Button */}
         <button
           type="button"
           onClick={onCreateNote}
-          className="flex flex-col items-start p-3.5 rounded-xl bg-bg-surface hover:bg-bg-hover border border-border-default hover:border-border-subtle text-left transition-all duration-150 cursor-pointer group shadow-2xs"
+          className="flex flex-col items-start p-3 sm:p-3.5 rounded-xl bg-bg-surface hover:bg-bg-hover border border-border-default hover:border-border-subtle text-left transition-all duration-150 cursor-pointer group shadow-2xs"
         >
           <div className="flex items-center justify-between w-full mb-2">
             <div className="w-7 h-7 rounded-lg bg-bg-primary border border-border-default flex items-center justify-center text-text-primary group-hover:scale-105 transition-transform">
               <Plus size={15} />
             </div>
-            <span className="text-[10px] font-mono text-text-muted bg-bg-primary px-1.5 py-0.5 rounded border border-border-subtle">
+            <span className="hidden sm:inline-block text-[10px] font-mono text-text-muted bg-bg-primary px-1.5 py-0.5 rounded border border-border-subtle">
               Ctrl+N
             </span>
           </div>
           <span className="text-xs font-semibold text-text-heading group-hover:text-text-primary">
             Catatan Baru
           </span>
-          <span className="text-[11px] text-text-muted mt-0.5">
+          <span className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
             Mulai lembar kosong
           </span>
         </button>
@@ -50,7 +50,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onCreateNote, onQuickCap
         <button
           type="button"
           onClick={onQuickCapture || onCreateNote}
-          className="flex flex-col items-start p-3.5 rounded-xl bg-bg-surface hover:bg-bg-hover border border-border-default hover:border-border-subtle text-left transition-all duration-150 cursor-pointer group shadow-2xs relative overflow-hidden"
+          className="flex flex-col items-start p-3 sm:p-3.5 rounded-xl bg-bg-surface hover:bg-bg-hover border border-border-default hover:border-border-subtle text-left transition-all duration-150 cursor-pointer group shadow-2xs relative overflow-hidden"
         >
           <div className="flex items-center justify-between w-full mb-2">
             <div className="w-7 h-7 rounded-lg bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary group-hover:scale-105 transition-transform">
@@ -63,7 +63,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({ onCreateNote, onQuickCap
           <span className="text-xs font-semibold text-text-heading group-hover:text-text-primary">
             Quick Capture
           </span>
-          <span className="text-[11px] text-text-muted mt-0.5">
+          <span className="text-[11px] text-text-muted mt-0.5 line-clamp-1">
             Auto simpan ke 00-Inbox
           </span>
         </button>

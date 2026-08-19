@@ -33,12 +33,15 @@ interface PropertiesTabProps {
     characters: number;
     readingTimeMinutes: number;
   };
+  isAutoDetecting?: boolean;
+  autoDetectError?: string | null;
   handleTypeChange: (val: string) => void;
   handleStatusChange: (val: string) => void;
   handleTagsChange: (newTags: string[]) => void;
   handleAliasesChange: (newAliases: string[]) => void;
   handleToggleRag: () => void;
   handleManualSync: () => void;
+  handleRunAutoDetect?: () => void;
 }
 
 export const PropertiesTab: React.FC<PropertiesTabProps> = ({
@@ -54,12 +57,15 @@ export const PropertiesTab: React.FC<PropertiesTabProps> = ({
   formattedCreated,
   formattedModified,
   stats,
+  isAutoDetecting,
+  autoDetectError,
   handleTypeChange,
   handleStatusChange,
   handleTagsChange,
   handleAliasesChange,
   handleToggleRag,
   handleManualSync,
+  handleRunAutoDetect,
 }) => {
   return (
     <div className="space-y-3 animate-in fade-in duration-150">
@@ -101,6 +107,7 @@ export const PropertiesTab: React.FC<PropertiesTabProps> = ({
             onChange={(e) => handleStatusChange(e.target.value)}
             className="w-full px-3 py-2 bg-bg-primary border border-border-default rounded-xl text-xs text-text-primary appearance-none focus:outline-none focus:ring-1 focus:ring-accent-primary pr-8 cursor-pointer"
           >
+            <option value="Inbox">Inbox</option>
             <option value="Idea">Idea</option>
             <option value="In Progress">In Progress</option>
             <option value="Draft">Draft</option>
@@ -200,6 +207,55 @@ export const PropertiesTab: React.FC<PropertiesTabProps> = ({
             </button>
           </div>
         )}
+      </div>
+
+      <div className="h-px bg-border-subtle" />
+
+      {/* 6.5. AI Auto-Detect Section */}
+      <div className="p-3 bg-gradient-to-br from-accent-primary/5 via-bg-primary to-bg-hover/30 border border-accent-primary/20 rounded-xl space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-text-heading">
+            <Sparkles size={14} className="text-accent-primary" />
+            <span>AI Auto-Detect</span>
+          </div>
+          <span className="text-[10px] text-text-muted px-1.5 py-0.5 rounded-full bg-accent-primary/10 text-accent-primary font-medium">
+            Pair 2
+          </span>
+        </div>
+
+        <p className="text-[11px] text-text-muted leading-snug">
+          Analisis otomatis isi catatan untuk mengisi metadata, tags, dan menentukan folder yang paling sesuai.
+        </p>
+
+        {autoDetectError && (
+          <p className="text-[11px] text-status-error font-medium">
+            {autoDetectError}
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={handleRunAutoDetect}
+          disabled={isAutoDetecting}
+          className={twMerge(
+            'w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-semibold transition-all duration-150 cursor-pointer shadow-xs',
+            isAutoDetecting
+              ? 'bg-accent-primary/50 text-white cursor-not-allowed'
+              : 'bg-accent-primary text-white hover:bg-accent-primary/90 hover:shadow-md'
+          )}
+        >
+          {isAutoDetecting ? (
+            <>
+              <Loader2 size={13} className="animate-spin" />
+              <span>Menganalisis Catatan...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles size={13} />
+              <span>Auto-Detect Metadata & Folder</span>
+            </>
+          )}
+        </button>
       </div>
 
       <div className="h-px bg-border-subtle" />

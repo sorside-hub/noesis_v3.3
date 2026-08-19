@@ -37,8 +37,8 @@ export const BottomNavPill: React.FC<BottomNavPillProps> = ({ activeTab, onTabCh
     >
       <nav
         aria-label="Main Navigation"
-        className={`p-1 rounded-full bg-bg-surface/90 backdrop-blur-md border border-border-default shadow-lg shadow-black/5 ring-1 ring-border-subtle ${
-          isChatView ? 'flex flex-col items-center gap-1.5' : 'flex flex-row items-center gap-1'
+        className={`p-0.5 rounded-full bg-bg-surface/90 backdrop-blur-md border border-border-default shadow-lg shadow-black/5 ring-1 ring-border-subtle ${
+          isChatView ? 'flex flex-col items-center gap-1' : 'flex flex-row items-center gap-1'
         }`}
       >
         <button
@@ -46,13 +46,13 @@ export const BottomNavPill: React.FC<BottomNavPillProps> = ({ activeTab, onTabCh
           aria-label="Vault"
           title="Vault"
           onClick={() => onTabChange('vault')}
-          className={`p-2.5 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
+          className={`p-2 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
             activeTab === 'vault'
               ? 'bg-text-primary text-bg-surface shadow-xs'
               : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover/60'
           }`}
         >
-          <Database size={18} />
+          <Database size={15} />
         </button>
 
         <button
@@ -60,13 +60,13 @@ export const BottomNavPill: React.FC<BottomNavPillProps> = ({ activeTab, onTabCh
           aria-label="Chat"
           title="Chat"
           onClick={() => onTabChange('chat')}
-          className={`p-2.5 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
+          className={`p-2 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
             activeTab === 'chat'
               ? 'bg-text-primary text-bg-surface shadow-xs'
               : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover/60'
           }`}
         >
-          <MessageSquare size={18} />
+          <MessageSquare size={15} />
         </button>
 
         <button
@@ -74,13 +74,13 @@ export const BottomNavPill: React.FC<BottomNavPillProps> = ({ activeTab, onTabCh
           aria-label="Settings"
           title="Settings"
           onClick={() => onTabChange('settings')}
-          className={`p-2.5 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
+          className={`p-2 rounded-full transition-all duration-150 cursor-pointer flex items-center justify-center ${
             activeTab === 'settings'
               ? 'bg-text-primary text-bg-surface shadow-xs'
               : 'text-text-secondary hover:text-text-primary hover:bg-bg-hover/60'
           }`}
         >
-          <Settings size={18} />
+          <Settings size={15} />
         </button>
       </nav>
     </div>

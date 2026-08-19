@@ -3,6 +3,7 @@ import { VaultData, FileNode, NoteMetadata } from '../../../types/vault';
 import { getAllLocalKeyOverrides } from '../../../lib/ai/keyManager';
 import { renderMarkdown } from '../../../lib/editor/markdownRenderer';
 import { RAGPipeline } from '../../rag/services/ragPipeline';
+import { AutoDetectResult } from '../../../api-core/autoDetectHandler';
 
 export type RightSidebarTab = 'PROPERTIES' | 'DISTIL' | 'BACKLINKS' | 'OUTGOING_LINKS' | 'OUTLINE';
 
@@ -11,6 +12,9 @@ interface UseRightSidebarLogicOptions {
   activeNode: FileNode | null;
   onSelectFile: (id: string) => void;
   onUpdateMetadata: (id: string, metadata: Partial<NoteMetadata>) => void;
+  updateNodeTitle?: (id: string, title: string) => void;
+  createFolder?: (parentId: string | null, name: string) => string | null;
+  moveNode?: (id: string, targetParentId: string | null) => void;
   onNavigateToHeading?: (lineIndex: number, text: string) => void;
 }
 
@@ -19,6 +23,9 @@ export function useRightSidebarLogic({
   activeNode,
   onSelectFile,
   onUpdateMetadata,
+  updateNodeTitle,
+  createFolder,
+  moveNode,
   onNavigateToHeading,
 }: UseRightSidebarLogicOptions) {
   const [activeTab, setActiveTab] = useState<RightSidebarTab>('PROPERTIES');
@@ -30,6 +37,12 @@ export function useRightSidebarLogic({
   const [distilHtml, setDistilHtml] = useState('');
   const [isSyncingRag, setIsSyncingRag] = useState(false);
   const [isSynced, setIsSynced] = useState<boolean | null>(null);
+
+  // Auto-Detect States
+  const [isAutoDetecting, setIsAutoDetecting] = useState(false);
+  const [autoDetectError, setAutoDetectError] = useState<string | null>(null);
+  const [autoDetectResult, setAutoDetectResult] = useState<AutoDetectResult | null>(null);
+  const [isAutoDetectModalOpen, setIsAutoDetectModalOpen] = useState(false);
 
   const includeInAiRag = activeNode?.metadata?.includeInAiRag ?? false;
 
@@ -165,6 +178,99 @@ export function useRightSidebarLogic({
   const handleAliasesChange = (newAliases: string[]) => {
     if (!activeNode) return;
     onUpdateMetadata(activeNode.id, { aliases: newAliases });
+  };
+
+  // Auto-Detect Handler
+  const handleRunAutoDetect = async () => {
+    if (!activeNode) return;
+    setIsAutoDetecting(true);
+    setAutoDetectError(null);
+
+    try {
+      // 1. Build list of existing folders
+      const existingFolders = Object.values(vault.nodes)
+        .filter((n) => n.type === 'folder')
+        .map((n) => {
+          let path = n.name;
+          let curr = n.parentId;
+          while (curr && vault.nodes[curr]) {
+            path = `${vault.nodes[curr].name}/${path}`;
+            curr = vault.nodes[curr].parentId;
+          }
+          return {
+            id: n.id,
+            name: n.name,
+            path,
+            parentId: n.parentId,
+          };
+        });
+
+      const customKeys = getAllLocalKeyOverrides();
+
+      const response = await fetch('/api/auto-detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: activeNode.name,
+          content: activeNode.content || '',
+          currentNoteType: noteType,
+          existingFolders,
+          customKeys,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Gagal memproses Auto-Detect');
+      }
+      if (!data.success) {
+        throw new Error(data.attempts?.[data.attempts.length - 1]?.error || 'Proses Auto-Detect gagal');
+      }
+
+      setAutoDetectResult(data.data.result);
+      setIsAutoDetectModalOpen(true);
+    } catch (err: any) {
+      setAutoDetectError(err.message || 'Error saat Auto-Detect');
+    } finally {
+      setIsAutoDetecting(false);
+    }
+  };
+
+  const handleApplyAutoDetect = (customResult?: AutoDetectResult) => {
+    const result = customResult || autoDetectResult;
+    if (!activeNode || !result) return;
+
+    // 1. Update Title if changed
+    if (result.suggestedTitle && result.suggestedTitle !== activeNode.name && updateNodeTitle) {
+      updateNodeTitle(activeNode.id, result.suggestedTitle);
+    }
+
+    // 2. Update Metadata
+    onUpdateMetadata(activeNode.id, {
+      noteType: result.noteType,
+      tags: result.tags,
+      aliases: result.aliases,
+    });
+
+    // 3. Move/Create Folder
+    const decision = result.folderDecision;
+    if (decision) {
+      if (decision.action === 'existing' && decision.existingFolderId) {
+        if (decision.existingFolderId !== activeNode.parentId && moveNode) {
+          moveNode(activeNode.id, decision.existingFolderId);
+        }
+      } else if (decision.action === 'new' && decision.newFolderName) {
+        if (createFolder && moveNode) {
+          const newFolderId = createFolder(decision.newFolderParentId || null, decision.newFolderName);
+          if (newFolderId) {
+            moveNode(activeNode.id, newFolderId);
+          }
+        }
+      }
+    }
+
+    setIsAutoDetectModalOpen(false);
+    setAutoDetectResult(null);
   };
 
   const handleDistilClick = (e: MouseEvent<HTMLDivElement>) => {
@@ -395,5 +501,12 @@ export function useRightSidebarLogic({
     handleManualSync,
     handleToggleRag,
     toggleHeadingCollapse,
+    isAutoDetecting,
+    autoDetectError,
+    autoDetectResult,
+    isAutoDetectModalOpen,
+    setIsAutoDetectModalOpen,
+    handleRunAutoDetect,
+    handleApplyAutoDetect,
   };
 }

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useEditorMode } from '../../../hooks/useEditorMode';
 import { EditorMode } from '../../../types/editor';
-import { FileNode, VaultData } from '../../../types/vault';
+import { FileNode, VaultData, NoteMetadata } from '../../../types/vault';
 import { EditorCoreRef } from '../components/EditorCore';
 import { PreviewPaneRef } from '../components/PreviewPane';
 
@@ -10,7 +10,7 @@ interface UseNoteEditorLogicProps {
   activeNode: FileNode | null;
   updateNodeTitle: (id: string, title: string) => void;
   updateNoteContent: (id: string, content: string) => void;
-  createNote: (parentId: string | null, name: string) => string | null;
+  createNote: (parentId: string | null, name: string, initialMetadata?: Partial<NoteMetadata>) => string | null;
   createFolder: (parentId: string | null, name: string) => string | null;
   navigateToNote: (id: string) => void;
   isMobileSidebarOpen: boolean;
@@ -120,7 +120,7 @@ export function useNoteEditorLogic({
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.');
     const captureName = `Capture ${dateStr} ${timeStr}`;
 
-    const newId = createNote(inboxFolderId, captureName);
+    const newId = createNote(inboxFolderId, captureName, { status: 'Inbox' });
     if (newId) {
       navigateToNote(newId);
     }

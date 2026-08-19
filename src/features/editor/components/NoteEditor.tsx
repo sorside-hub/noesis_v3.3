@@ -325,6 +325,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ vaultState: externalVaul
           activeNode={activeNode}
           onSelectFile={handleSelectFile}
           onUpdateMetadata={updateNoteMetadata}
+          updateNodeTitle={updateNodeTitle}
+          createFolder={createFolder}
+          moveNode={moveNode}
           onNavigateToHeading={handleNavigateToHeading}
         />
       </div>
@@ -343,6 +346,9 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({ vaultState: externalVaul
           activeNode={activeNode}
           onSelectFile={handleSelectFile}
           onUpdateMetadata={updateNoteMetadata}
+          updateNodeTitle={updateNodeTitle}
+          createFolder={createFolder}
+          moveNode={moveNode}
           onNavigateToHeading={handleNavigateToHeading}
         />
       </MobileDrawer>
