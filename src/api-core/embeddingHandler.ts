@@ -3,8 +3,8 @@ import { executeWithFailover } from '../lib/ai/failoverAdapter';
 
 // We create a specific cascade for embeddings since it requires a specific model
 const embeddingCascade = [
-  { role: 'primary' as const, model: 'text-embedding-004' },
-  { role: 'backup' as const, model: 'text-embedding-004' }
+  { role: 'primary' as const, model: 'gemini-embedding-2' },
+  { role: 'backup' as const, model: 'gemini-embedding-2' }
 ];
 
 export async function handleGenerateEmbeddings(
