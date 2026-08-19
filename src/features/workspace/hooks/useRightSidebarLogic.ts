@@ -256,12 +256,21 @@ export function useRightSidebarLogic({
     const decision = result.folderDecision;
     if (decision) {
       if (decision.action === 'existing' && decision.existingFolderId) {
-        if (decision.existingFolderId !== activeNode.parentId && moveNode) {
-          moveNode(activeNode.id, decision.existingFolderId);
+        // Handle case where existingFolderId is returned as string "null"
+        const existingParentId = decision.existingFolderId === 'null' ? null : decision.existingFolderId;
+        if (existingParentId !== activeNode.parentId && moveNode) {
+          moveNode(activeNode.id, existingParentId);
         }
       } else if (decision.action === 'new' && decision.newFolderName) {
         if (createFolder && moveNode) {
-          const newFolderId = createFolder(decision.newFolderParentId || null, decision.newFolderName);
+          const resolvedParentId = 
+            decision.newFolderParentId && 
+            decision.newFolderParentId !== 'null' && 
+            decision.newFolderParentId !== 'undefined'
+              ? decision.newFolderParentId
+              : null;
+              
+          const newFolderId = createFolder(resolvedParentId, decision.newFolderName);
           if (newFolderId) {
             moveNode(activeNode.id, newFolderId);
           }
