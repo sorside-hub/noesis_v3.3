@@ -79,6 +79,12 @@ export const loadVault = async (): Promise<VaultData> => {
     const allNodesArray = await db.nodes.toArray();
     const nodesRecord: Record<string, FileNode> = {};
     for (const node of allNodesArray) {
+      // Sanitize bad parentId strings
+      if (node.parentId === 'null' || node.parentId === 'undefined') {
+        node.parentId = null;
+        // Run async fix in the background
+        db.nodes.put(node).catch(() => {});
+      }
       nodesRecord[node.id] = node;
     }
 
@@ -169,7 +175,12 @@ export const importVaultFromJSON = async (jsonString: string): Promise<void> => 
     // Validate each node structure lightly
     const nodesToImport: FileNode[] = parsed.nodes.filter((node: any) => 
       node && typeof node.id === 'string' && typeof node.type === 'string' && typeof node.name === 'string'
-    );
+    ).map((node: any) => {
+      if (node.parentId === 'null' || node.parentId === 'undefined') {
+        node.parentId = null;
+      }
+      return node;
+    });
 
     if (nodesToImport.length === 0) {
       throw new Error('No valid nodes found to import.');
