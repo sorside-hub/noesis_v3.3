@@ -191,6 +191,9 @@ export class RAGPipeline {
     if (!content || content.trim() === '') return true;
     const currentHash = await generateContentHash(content);
     const existingAnalysis = await db.ai_analysis.get(noteId);
+    
+    console.log(`[isNoteSynced] noteId=${noteId}, currentHash=${currentHash}, existingHash=${existingAnalysis?.contentHash}`);
+    
     return !!(existingAnalysis && existingAnalysis.contentHash === currentHash);
   }
 }
