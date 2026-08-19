@@ -1,5 +1,4 @@
 import { IEmbeddingService } from '../types';
-import { handleGenerateEmbeddings } from '../../../api-core/embeddingHandler';
 import { KeySlotId } from '../../../lib/ai/types';
 
 export class GeminiEmbeddingService implements IEmbeddingService {
@@ -19,10 +18,20 @@ export class GeminiEmbeddingService implements IEmbeddingService {
   async generateEmbeddings(texts: string[]): Promise<number[][]> {
     if (!texts || texts.length === 0) return [];
 
-    const result = await handleGenerateEmbeddings(texts, this.customKeys);
+    const res = await fetch('/api/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texts, customKeys: this.customKeys })
+    });
+
+    if (!res.ok) {
+       throw new Error(`Server returned status ${res.status}`);
+    }
+
+    const result = await res.json();
     
     if (!result.success || !result.data) {
-      throw new Error(`Failed to generate embeddings: ${result.attempts[result.attempts.length - 1]?.error || 'Unknown error'}`);
+      throw new Error(`Failed to generate embeddings: ${result.attempts?.[result.attempts.length - 1]?.error || 'Unknown error'}`);
     }
 
     this.currentModelName = result.data.modelUsed;
