@@ -6,6 +6,8 @@ import { KeySlotId } from './src/lib/ai/types';
 import { handleKeysOverview, handleSingleKeyCheck } from './src/api-core/keysHandler';
 import { handleDistil } from './src/api-core/distilHandler';
 import { handleAutoDetect, ExistingFolderInfo } from './src/api-core/autoDetectHandler';
+import { handleAnalyzeNote } from './src/api-core/analysisHandler';
+import { handleGenerateEmbeddings } from './src/api-core/embeddingHandler';
 
 // Load environment variables from .env
 dotenv.config();
@@ -121,6 +123,32 @@ async function startServer() {
       res.status(500).json({
         error: error instanceof Error ? error.message : 'Internal Server Error',
       });
+    }
+  });
+
+  // POST /api/analyze - AI Analysis for RAG
+  app.post('/api/analyze', async (req, res) => {
+    try {
+      const { content, customKeys } = req.body;
+      if (!content) return res.status(400).json({ error: 'content is required' });
+      const result = await handleAnalyzeNote(content, customKeys, process.env);
+      res.json(result);
+    } catch (error: unknown) {
+      console.error('[API /api/analyze Error]:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Internal Server Error' });
+    }
+  });
+
+  // POST /api/embeddings - Generate Embeddings for RAG
+  app.post('/api/embeddings', async (req, res) => {
+    try {
+      const { texts, customKeys } = req.body;
+      if (!texts || !Array.isArray(texts)) return res.status(400).json({ error: 'texts array is required' });
+      const result = await handleGenerateEmbeddings(texts, customKeys, process.env);
+      res.json(result);
+    } catch (error: unknown) {
+      console.error('[API /api/embeddings Error]:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Internal Server Error' });
     }
   });
 
