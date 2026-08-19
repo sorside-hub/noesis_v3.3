@@ -1,4 +1,3 @@
-import { handleAnalyzeNote } from '../../../api-core/analysisHandler';
 import { KeySlotId } from '../../../lib/ai/types';
 
 export interface AIAnalysisResult {
@@ -21,10 +20,20 @@ export class AnalysisEngine {
       };
     }
 
-    const response = await handleAnalyzeNote(content, customKeys);
+    const res = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, customKeys })
+    });
+    
+    if (!res.ok) {
+       throw new Error(`Server returned status ${res.status}`);
+    }
+
+    const response = await res.json();
     
     if (!response.success || !response.data) {
-      throw new Error(`Analysis failed: ${response.attempts[response.attempts.length - 1]?.error || 'Unknown error'}`);
+      throw new Error(`Analysis failed: ${response.attempts?.[response.attempts.length - 1]?.error || 'Unknown error'}`);
     }
 
     try {
