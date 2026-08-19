@@ -48,7 +48,7 @@ export const ModeSwitcher: React.FC<ModeSwitcherProps> = ({
       className={twMerge(
         'flex items-center gap-1 p-0.5 sm:p-1 bg-bg-surface/90 backdrop-blur-md border border-border-default shadow-md transition-all duration-200',
         variant === 'floating'
-          ? 'fixed right-1.5 sm:right-3 top-1/2 -translate-y-1/2 z-30 flex-col rounded-full'
+          ? 'fixed right-1.5 sm:right-3 top-[60%] -translate-y-1/2 z-30 flex-col rounded-full'
           : 'flex-row rounded-lg bg-transparent shadow-none border-none p-0',
         className
       )}
