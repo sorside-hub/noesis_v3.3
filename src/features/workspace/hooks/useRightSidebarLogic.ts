@@ -337,10 +337,14 @@ export function useRightSidebarLogic({
     try {
       const customKeys = getAllLocalKeyOverrides();
       const pipeline = new RAGPipeline(customKeys);
-      await pipeline.processNote(activeNode.id, activeNode.content || '');
-      setIsSynced(true);
+      const success = await pipeline.processNote(activeNode.id, activeNode.content || '');
+      setIsSynced(success);
+      if (!success) {
+        console.warn('Manual sync returned false (failed)');
+      }
     } catch (err) {
       console.error('Failed manual sync to brain:', err);
+      setIsSynced(false);
     } finally {
       setIsSyncingRag(false);
     }
@@ -358,11 +362,12 @@ export function useRightSidebarLogic({
       try {
         const customKeys = getAllLocalKeyOverrides();
         const pipeline = new RAGPipeline(customKeys);
-        await pipeline.processNote(activeNode.id, activeNode.content || '');
+        const success = await pipeline.processNote(activeNode.id, activeNode.content || '');
         onUpdateMetadata(activeNode.id, { includeInAiRag: nextState });
-        setIsSynced(true);
+        setIsSynced(success);
       } catch (err) {
         console.error('Failed to sync to brain:', err);
+        setIsSynced(false);
       } finally {
         setIsSyncingRag(false);
       }
