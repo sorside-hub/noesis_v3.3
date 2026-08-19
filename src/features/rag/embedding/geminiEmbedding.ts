@@ -3,7 +3,7 @@ import { KeySlotId } from '../../../lib/ai/types';
 
 export class GeminiEmbeddingService implements IEmbeddingService {
   private customKeys?: Partial<Record<KeySlotId, string>>;
-  private currentModelName: string = 'text-embedding-004';
+  private currentModelName: string = 'gemini-embedding-2';
   private currentDimension: number = 768;
 
   constructor(customKeys?: Partial<Record<KeySlotId, string>>) {
