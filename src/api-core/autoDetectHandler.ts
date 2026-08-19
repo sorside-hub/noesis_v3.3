@@ -59,7 +59,7 @@ CRITICAL FOLDER SELECTION RULES:
 1. Examine the existing folder list carefully.
 2. If an existing folder matches the note's subject matter (>70% relevance), choose action "existing" and set "existingFolderId" to that folder's ID and "existingFolderPath" to its path.
 3. If NO existing folder is relevant, choose action "new":
-   - If creating a new top-level folder at root (newFolderParentId = null): Check the numbered prefixes of existing root folders (e.g. "00-Inbox", "01-Projects"). Find the highest number used and assign the next sequential two-digit prefix (e.g., "02-Guides", "03-Reference").
+   - If creating a new top-level folder at root (OMIT newFolderParentId completely): Check the numbered prefixes of existing root folders (e.g. "00-Inbox", "01-Projects"). Find the highest number used and assign the next sequential two-digit prefix (e.g., "02-Guides", "03-Reference").
    - If creating a subfolder, set newFolderName and newFolderParentId to the parent folder's ID.
 
 METADATA RULES:
