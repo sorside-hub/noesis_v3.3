@@ -1,5 +1,6 @@
 import { VaultData, FileNode } from '../types/vault';
 import { db } from './db';
+import { pushNodeToCloud, deleteNodesFromCloud } from './cloudSync';
 
 const STORAGE_KEY_VAULT = 'noesis_vault_v1';
 const LEGACY_KEY_TITLE = 'obsidian_clone_title';
@@ -137,6 +138,8 @@ export const saveOpenTabs = async (tabs: string[]): Promise<void> => {
 export const saveNode = async (node: FileNode): Promise<void> => {
   try {
     await db.nodes.put(node);
+    // Background cloud sync (fire-and-forget)
+    pushNodeToCloud(node).catch(console.error);
   } catch (err) {
     console.error('Failed to save node to IndexedDB:', err);
   }
@@ -145,6 +148,8 @@ export const saveNode = async (node: FileNode): Promise<void> => {
 export const deleteNodes = async (ids: string[]): Promise<void> => {
   try {
     await db.nodes.bulkDelete(ids);
+    // Background cloud sync (fire-and-forget)
+    deleteNodesFromCloud(ids).catch(console.error);
   } catch (err) {
     console.error('Failed to delete nodes from IndexedDB:', err);
   }

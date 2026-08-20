@@ -2,7 +2,8 @@ import { db } from '../../../lib/db';
 import { generateContentHash } from '../utils/hash';
 import { ChunkerService } from '../chunking/chunkerService';
 import { GeminiEmbeddingService } from '../embedding/geminiEmbedding';
-import { IndexedDbVectorStore } from '../vector/indexedDbStore';
+import { SupabaseVectorStore } from '../vector/supabaseStore';
+import { SupabaseMetadataStore } from '../analysis/supabaseMetadataStore';
 import { AnalysisEngine } from '../analysis/analysisEngine';
 import { EmbeddingRecord, AIAnalysisRecord } from '../types/models';
 import { KeySlotId } from '../../../lib/ai/types';
@@ -16,11 +17,13 @@ export interface SearchResultChunk {
 
 export class RAGPipeline {
   private embeddingService: GeminiEmbeddingService;
-  private vectorStore: IndexedDbVectorStore;
+  private vectorStore: SupabaseVectorStore;
+  private metadataStore: SupabaseMetadataStore;
 
   constructor(customKeys?: Partial<Record<KeySlotId, string>>) {
     this.embeddingService = new GeminiEmbeddingService(customKeys);
-    this.vectorStore = new IndexedDbVectorStore();
+    this.vectorStore = new SupabaseVectorStore();
+    this.metadataStore = new SupabaseMetadataStore();
   }
 
   /**
@@ -42,13 +45,17 @@ export class RAGPipeline {
 
     // Stage 2: Fine Rerank & Noise Filter (Concept Overlap + Document Grouping)
     for (const record of rawCandidates) {
-      let finalScore = record.similarityScore || 0;
+      // In Supabase, the structure might be different (e.g. record.similarity)
+      let finalScore = record.similarityScore || record.similarity || 0;
       
-      const note = await db.nodes.get(record.noteId);
+      // record from supabase RPC will have note_id, content
+      const actualNoteId = record.noteId || record.note_id;
+      
+      const note = await db.nodes.get(actualNoteId);
       const title = note?.name || 'Catatan Tanpa Judul';
       
       // Concept Overlap Boost
-      const analysis = await db.ai_analysis.get(record.noteId);
+      const analysis = await this.metadataStore.get(actualNoteId);
       if (analysis) {
         let matchCount = 0;
         const allTags = [...analysis.keywords, ...analysis.concepts].map(t => t.toLowerCase());
@@ -67,7 +74,7 @@ export class RAGPipeline {
       }
       
       results.push({
-        noteId: record.noteId,
+        noteId: actualNoteId,
         noteTitle: title,
         snippet: record.content,
         score: finalScore
@@ -93,7 +100,7 @@ export class RAGPipeline {
       if (!content || content.trim() === '') {
         // Clean up if note is emptied
         await this.vectorStore.deleteByNoteId(noteId);
-        await db.ai_analysis.delete(noteId);
+        await this.metadataStore.delete(noteId);
         return true;
       }
 
@@ -101,7 +108,7 @@ export class RAGPipeline {
       const currentHash = await generateContentHash(content);
 
       // 2. Check if re-indexing is needed
-      const existingAnalysis = await db.ai_analysis.get(noteId);
+      const existingAnalysis = await this.metadataStore.get(noteId);
       if (existingAnalysis && existingAnalysis.contentHash === currentHash) {
         // Content hasn't changed, skip entire pipeline to save API calls and CPU
         console.log(`[RAG] Skipping note ${noteId}, content hash matches.`);
@@ -129,7 +136,7 @@ export class RAGPipeline {
       };
       
       // Save analysis to DB
-      await db.ai_analysis.put(analysisRecord);
+      await this.metadataStore.put(analysisRecord);
 
       // 5. Chunking Layer
       const originalChunks = ChunkerService.chunkOriginalContent(content);
@@ -181,16 +188,16 @@ export class RAGPipeline {
    */
   async deleteNote(noteId: string): Promise<void> {
     await this.vectorStore.deleteByNoteId(noteId);
-    await db.ai_analysis.delete(noteId);
+    await this.metadataStore.delete(noteId);
   }
 
   /**
-   * Checks if a note's current content matches the indexed content hash in IndexedDB.
+   * Checks if a note's current content matches the indexed content hash.
    */
-  static async isNoteSynced(noteId: string, content: string): Promise<boolean> {
+  async isNoteSynced(noteId: string, content: string): Promise<boolean> {
     if (!content || content.trim() === '') return true;
     const currentHash = await generateContentHash(content);
-    const existingAnalysis = await db.ai_analysis.get(noteId);
+    const existingAnalysis = await this.metadataStore.get(noteId);
     
     console.log(`[isNoteSynced] noteId=${noteId}, currentHash=${currentHash}, existingHash=${existingAnalysis?.contentHash}`);
     

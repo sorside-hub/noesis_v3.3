@@ -1,3 +1,4 @@
+import { AuthProvider } from './context/AuthContext';
 import { NoteEditor } from './features/editor/components/NoteEditor';
 import { SettingsView } from './features/settings/components/SettingsView';
 import { ChatView } from './features/chat/components/ChatView';
@@ -68,12 +69,14 @@ export default function App() {
   }
 
   return (
-    <NavigationProvider
-      activeTabId={vaultState.vault.activeTabId}
-      onSelectTabId={vaultState.setActiveTabId}
-    >
-      <AppContent vaultState={vaultState} />
-    </NavigationProvider>
+    <AuthProvider>
+      <NavigationProvider
+        activeTabId={vaultState.vault.activeTabId}
+        onSelectTabId={vaultState.setActiveTabId}
+      >
+        <AppContent vaultState={vaultState} />
+      </NavigationProvider>
+    </AuthProvider>
   );
 }
 

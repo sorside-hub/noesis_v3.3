@@ -53,7 +53,8 @@ export function useRightSidebarLogic({
       return;
     }
     let isMounted = true;
-    RAGPipeline.isNoteSynced(activeNode.id, activeNode.content || '').then((synced) => {
+    const rag = new RAGPipeline();
+    rag.isNoteSynced(activeNode.id, activeNode.content || '').then((synced) => {
       if (isMounted) {
         setIsSynced(synced);
       }

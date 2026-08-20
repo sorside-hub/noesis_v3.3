@@ -15,6 +15,7 @@ import { useTheme, ThemeMode } from '../../../hooks/useTheme';
 import { VaultData, FileNode } from '../../../types/vault';
 import { ApiKeyStatusSection } from './ApiKeyStatusSection';
 import { RagSettingsSection } from './RagSettingsSection';
+import { SupabaseAuthSection } from './SupabaseAuthSection';
 import { exportVaultToJSON, importVaultFromJSON } from '../../../lib/storage';
 
 interface SettingsViewProps {
@@ -118,15 +119,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ vault }) => {
           </div>
         </section>
 
-        {/* 2. API KEYS & FAILOVER */}
+        {/* 2. CLOUD SYNC & AUTH */}
+        <section>
+          <SupabaseAuthSection />
+        </section>
+
+        {/* 3. API KEYS & FAILOVER */}
         <section>
           <ApiKeyStatusSection />
         </section>
 
-        {/* 3. AI MEMORY (RAG) */}
+        {/* 4. AI MEMORY (RAG) */}
         <RagSettingsSection vault={vault} />
 
-        {/* 4. VAULT INFO */}
+        {/* 5. VAULT INFO */}
         <section>
           <h2 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2.5 px-1 flex items-center gap-2">
             <HardDrive size={14} /> Vault & Storage
